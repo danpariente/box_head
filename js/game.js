@@ -8,6 +8,8 @@ gameScene.init = function(){
 
   this.enemyMinY = 80;
   this.enemyMaxY = 280;
+
+  this.isTerminated = false;
 };
 
 gameScene.preload = function(){
@@ -44,6 +46,8 @@ gameScene.create = function(){
 };
 
 gameScene.update = function(){
+  if (this.isTerminated) return;
+
   if (this.input.activePointer.isDown) {
     this.player.x += this.playerSpeed;
   }
@@ -54,9 +58,7 @@ gameScene.update = function(){
     let enemyRect = enemy.getBounds();
 
     if (Phaser.Geom.Intersects.RectangleToRectangle(playerRect, enemyRect)) {
-      console.log('Game Over');
-      this.scene.restart();
-      return;
+      return this.gameOver();
     }
 
     enemy.y += enemy.speed;
@@ -67,6 +69,20 @@ gameScene.update = function(){
     if (conditionUp || conditionDown) {
       enemy.speed *= -1;
     }
+  }, this);
+};
+
+gameScene.gameOver = function(){
+  this.isTerminated = true;
+
+  this.cameras.main.shake(500);
+
+  this.cameras.main.on('camerashakecomplete', function(camera, effect) {
+    this.cameras.main.fade(1000);
+  }, this);
+
+  this.cameras.main.on('camerafadeoutcomplete', function(camera, effect) {
+    this.scene.restart();
   }, this);
 };
 
